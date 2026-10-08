@@ -1,0 +1,23 @@
+# Default configuration for finance-data-analysis-lab
+#
+# The risk-free-rate assumption (rf_annual) is deliberately configurable:
+# it is set to 0.0 below so that Sharpe/Sortino ratios are directly comparable
+# across studies that use different funding-cost assumptions. Set it to, e.g.,
+# 0.04 to approximate an average short-term US Treasury yield over the sample.
+
+universe:
+  tickers: [AAPL, MSFT, JNJ, JPM, XOM, PG, AMZN]
+  benchmark: SPY
+
+dates:
+  start: "2018-01-01"
+  end: "2026-10-08"
+
+rates:
+  rf_annual: 0.0  # annual risk-free rate assumption (configurable)
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  figures_dir: figures
+  reports_dir: reports
