@@ -1,0 +1,13 @@
+# Core runtime dependencies (minimum versions; see pyproject.toml for full metadata)
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+statsmodels>=0.14
+matplotlib>=3.7
+seaborn>=0.12
+yfinance>=0.2.40
+pyyaml>=6.0
+
+# Development / testing
+pytest>=8.0
+ruff>=0.4

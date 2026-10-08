@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite it using the metadata below."
+title: "finance-data-analysis-lab: descriptive financial analytics on real daily market data"
+authors:
+  - family-names: Monavvari
+    given-names: Aydin
+    email: 245710241+aydinmonavvari@users.noreply.github.com
+version: 1.0.0
+date-released: "2026-10-08"
+repository-code: "https://github.com/aydinmonavvari/finance-data-analysis-lab"
+license: MIT
+abstract: >-
+  An educational research project that applies descriptive quantitative analysis
+  to raw daily financial market data. The repository transforms Yahoo Finance
+  adjusted prices for seven US large-cap equities and the SPY benchmark into
+  interpretable investment and risk information: log and simple returns,
+  annualized return and volatility, Sharpe, Sortino and Calmar ratios, maximum
+  drawdown, beta and alpha versus the benchmark, plus Jarque-Bera normality,
+  Augmented Dickey-Fuller stationarity and Ljung-Box autocorrelation tests.
+  The project is descriptive, not predictive, and provides no investment advice.
+keywords:
+  - quantitative finance
+  - descriptive analytics
+  - risk analysis
+  - return statistics
+  - drawdown
+  - Sharpe ratio
+  - normality tests
+  - educational research
