@@ -18,7 +18,7 @@ transforms raw daily adjusted equity prices into interpretable investment and ri
 return and volatility statistics, Sharpe/Sortino/Calmar ratios, drawdown profiles, benchmark
 beta/alpha, correlation structure, and formal distributional/stationarity diagnostics
 (Jarque-Bera, Augmented Dickey-Fuller, Ljung-Box). The pipeline is cache-first (offline
-reproducible), fully tested (43 unit tests, no network) and lint-clean.
+reproducible), fully tested (46 unit tests, no network) and lint-clean.
 
 ## 3 · Research question
 
@@ -58,7 +58,8 @@ modelling is a transferable research habit — and the explicit purpose of this 
 
 1. **Ingest** daily adjusted closes for AAPL, MSFT, JNJ, JPM, XOM, PG, AMZN and benchmark SPY
    via `yfinance`, with retries and a per-ticker CSV cache under `data/raw/`
-   (cache first, network only on miss).
+   (cache first, network only on miss; a cache hit is coverage-checked against the
+   configured window, so a truncated cache is re-downloaded instead of silently accepted).
 2. **Validate** the panel: positive prices, strictly increasing unique business-day index, and
    a documented missing-value policy (forward-fill gaps ≤ 5 trading days; drop unrepaired rows).
 3. **Compute** descriptive metrics per symbol: annualized return/volatility, Sharpe, Sortino,
@@ -123,7 +124,7 @@ configs/default.yaml
         │                              │
         ▼                              ▼
    figures/*.png                 reports/*.{json,md}
-   tests/ (43, offline)      scripts/{download_data,run_analysis}.py
+   tests/ (46, offline)      scripts/{download_data,run_analysis}.py
 ```
 
 ## 10 · Experimental / analytical design
@@ -135,8 +136,9 @@ configs/default.yaml
 - **Statistical decisions fixed in advance:** annualization by 252 trading days; Sharpe/Sortino
   computed with the configurable `rf_annual` (0.0 in the committed run); ADF with AIC lag
   selection; Ljung-Box at lag 20 (≈ one trading month); significance level 5%.
-- **Determinism:** no randomness in the pipeline (a seed is set anyway); every figure/report is
-  byte-for-byte regenerable from the cache with two commands (see [§16](#16--reproducibility)).
+- **Determinism:** no randomness in the pipeline (a seed is set anyway); every statistic and
+  figure is regenerable from the cache with two commands (see [§16](#16--reproducibility));
+  the only run-varying field in the outputs is the `generated_at` timestamp.
 
 ## 11 · Methods & metrics
 
@@ -168,12 +170,12 @@ All formulas are implemented once in `src/finance_data_analysis_lab/metrics.py` 
 Because this is a descriptive study, "evaluation" means **verification of the analytics**, not
 forecast scoring:
 
-- **Unit tests (43, offline, synthetic):** every metric is checked against hand-derived values
+- **Unit tests (46, offline, synthetic):** every metric is checked against hand-derived values
   (e.g. Sharpe of a known series, a −50% drawdown path, β = 2 by construction); the validator
   must reject unsorted indices, duplicate dates and non-positive prices; white noise must not
   be flagged by Jarque-Bera/Ljung-Box while trending series must fail ADF.
 - **Linting:** `ruff check .` (rules E, F, W, I, B, UP), line length 100.
-- **Reproducibility check:** `run_analysis.py` on the committed cache regenerates every figure
+- **Reproducibility check:** `run_analysis.py` on the local cache regenerates every figure
   and both reports with zero network access.
 
 ## 13 · Results
@@ -238,9 +240,11 @@ benchmark fell 33.7% peak-to-trough.*
 
 ![Correlation heatmap](figures/correlation_heatmap.png)
 
-*Figure 5 — Pearson correlations of daily returns. MSFT–AMZN (0.65) and AAPL–MSFT (0.64) are the
-strongest pairs; XOM and the defensive names (PG, JNJ) correlate least with the technology
-cluster (e.g. JNJ–AMZN 0.14) — consistent with, but not proof of, sector structure.*
+*Figure 5 — Pearson correlations of daily returns. SPY–MSFT (0.77) and SPY–AAPL (0.75) are the
+strongest pairs, as expected for a market benchmark; excluding SPY, the strongest pairs are
+MSFT–AMZN (0.65) and AAPL–MSFT (0.64). XOM and the defensive names (PG, JNJ) correlate least
+with the technology cluster (e.g. JNJ–AMZN 0.14) — consistent with, but not proof of, sector
+structure.*
 
 ![Rolling volatility](figures/rolling_volatility.png)
 
@@ -307,13 +311,16 @@ python scripts/download_data.py            # add --refresh to force re-download
 # 2) run the full pipeline offline from the cache
 python scripts/run_analysis.py             # regenerates figures/ + reports/
 
-# 3) verify: lint + 43 offline unit tests
+# 3) verify: lint + 46 offline unit tests
 ruff check .
 python -m pytest tests/ -q
 ```
 
-The committed `data/raw/*.csv` cache (gitignored by policy, so first run on a fresh clone
-re-downloads) reproduces every number in this README with the two commands in step 2–3.
+The local `data/raw/*.csv` cache (git-ignored by policy, so a fresh clone re-downloads it)
+reproduces every number in this README with the two commands in steps 2–3. The loader also
+checks that a cached series actually covers the configured window — a truncated cache is
+re-downloaded (or rejected with a clear error offline) rather than silently shortening the
+study.
 
 ## 17 · Installation
 
@@ -395,7 +402,7 @@ finance-data-analysis-lab/
 ├── scripts/
 │   ├── download_data.py       # CLI: fetch/cache all symbols
 │   └── run_analysis.py        # CLI: full analysis pipeline
-├── tests/                     # 43 offline tests (synthetic fixtures)
+├── tests/                     # 46 offline tests (synthetic fixtures)
 │   ├── test_metrics.py
 │   ├── test_data_validation.py
 │   └── test_stats_tests.py

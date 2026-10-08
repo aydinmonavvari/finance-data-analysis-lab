@@ -66,7 +66,7 @@ Provenance and licensing notes: Yahoo Finance data is supplied for personal, non
 
 **Statistical diagnostics.** Jarque–Bera tests of normality of daily log returns; Augmented Dickey–Fuller tests applied separately to log prices (expected: unit root not rejected) and log returns (expected: unit root rejected); Ljung–Box test at lag 20 for residual autocorrelation.
 
-**Engineering.** All routines are typed, documented, unit-tested against hand-computed values (43 offline tests), and orchestrated by a deterministic pipeline writing machine-readable outputs (`reports/metrics.json`) and human-readable summaries (`reports/summary.md`).
+**Engineering.** All routines are typed, documented, unit-tested against hand-computed values (46 offline tests), and orchestrated by a deterministic pipeline writing machine-readable outputs (`reports/metrics.json`) and human-readable summaries (`reports/summary.md`).
 
 ## Experimental Design
 

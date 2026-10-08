@@ -5,7 +5,12 @@ Pipeline design
 1. **Cache first, network on miss.** :func:`load_or_fetch` reads a per-ticker
    CSV from ``data/raw/`` when present and only calls Yahoo Finance through
    ``yfinance`` when the cache is missing (or ``refresh=True`` is requested).
-   This keeps the pipeline reproducible, cheap and polite to the data provider.
+   A cache hit is additionally **coverage-checked**: the cached series must
+   span the requested ``start..end`` window (within a small calendar
+   tolerance for weekends/holidays), otherwise the loader warns and
+   re-downloads instead of silently shortening the study to whatever the
+   truncated cache happens to contain. This keeps the pipeline reproducible,
+   cheap and polite to the data provider.
 2. **Validation.** :func:`validate_prices` enforces an explicit data contract:
    a strictly increasing, unique business-day ``DatetimeIndex``, strictly
    positive prices, and a documented missing-value policy (forward-fill gaps of
@@ -36,6 +41,12 @@ MAX_FFILL_LIMIT = 5
 
 # Share of missing observations above which a warning is recorded.
 MISSING_WARN_FRACTION = 0.01
+
+# Calendar-day slack allowed at either edge of the requested window before a
+# cached series is judged not to cover it. Weekends and market holidays around
+# the window boundaries (e.g. a Jan 1 start) are legitimate; a truncated cache
+# is short by weeks or years and fails the check.
+CACHE_COVERAGE_TOLERANCE_DAYS = 10
 
 
 def cache_path(raw_dir: str | Path, ticker: str) -> Path:
@@ -116,6 +127,23 @@ def fetch_adjusted_close(
     ) from last_error
 
 
+def _cache_covers_window(series: pd.Series, start: str, end: str) -> bool:
+    """Return True when the cached series spans the requested ``start..end`` window.
+
+    ``end`` is exclusive (Yahoo's download convention), so the last expected
+    trading day is the calendar day before ``end``. A tolerance of
+    :data:`CACHE_COVERAGE_TOLERANCE_DAYS` calendar days at each edge absorbs
+    weekends and market holidays; a cache truncated at either end by more than
+    that fails the check instead of silently shortening the study.
+    """
+    tolerance = pd.Timedelta(days=CACHE_COVERAGE_TOLERANCE_DAYS)
+    first, last = series.index.min(), series.index.max()
+    starts_early_enough = first <= pd.Timestamp(start) + tolerance
+    expected_last = pd.Timestamp(end) - pd.Timedelta(days=1)  # end is exclusive
+    ends_late_enough = last >= expected_last - tolerance
+    return bool(starts_early_enough and ends_late_enough)
+
+
 def load_or_fetch(
     ticker: str,
     start: str,
@@ -125,14 +153,19 @@ def load_or_fetch(
 ) -> pd.Series:
     """Load a ticker's adjusted close from the local cache, else download it.
 
-    Cache-first policy: on a cache hit the CSV is returned untouched, so runs
-    are reproducible without network access. Pass ``refresh=True`` (or use
+    Cache-first policy with a coverage check: on a cache hit the CSV is read
+    and validated against the requested ``start..end`` window, so runs are
+    reproducible without network access — and a cache that only covers part of
+    the configured window (e.g. written by an earlier run with different
+    dates) is not silently accepted. An insufficient cache triggers a warning
+    and a re-download; if that re-download fails, a clear error is raised
+    rather than returning a short series. Pass ``refresh=True`` (or use
     ``scripts/download_data.py --refresh``) to force a fresh download.
 
     Args:
         ticker: Yahoo ticker symbol.
         start: Start date ``YYYY-MM-DD``.
-        end: End date ``YYYY-MM-DD``.
+        end: End date ``YYYY-MM-DD`` (exclusive, Yahoo convention).
         raw_dir: Directory holding the per-ticker CSV cache.
         refresh: When True, bypass the cache and re-download.
 
@@ -144,15 +177,34 @@ def load_or_fetch(
         frame = pd.read_csv(path, index_col=0, parse_dates=True)
         series = frame.iloc[:, 0].astype(float)
         series.name = ticker.upper()
-        logger.info(
-            "Cache hit for %s: %d rows (%s to %s)",
+        if _cache_covers_window(series, start, end):
+            logger.info(
+                "Cache hit for %s: %d rows (%s to %s)",
+                ticker,
+                len(series),
+                series.index.min(),
+                series.index.max(),
+            )
+            return series
+        logger.warning(
+            "Cache for %s covers %s to %s, which does NOT cover the requested "
+            "window %s to %s; re-downloading",
             ticker,
-            len(series),
-            series.index.min(),
-            series.index.max(),
+            series.index.min().date(),
+            series.index.max().date(),
+            start,
+            end,
         )
-        return series
-    series = fetch_adjusted_close(ticker, start, end)
+    try:
+        series = fetch_adjusted_close(ticker, start, end)
+    except Exception as exc:  # noqa: BLE001 - yfinance/urllib raise a variety of errors
+        if path.exists() and not refresh:
+            raise RuntimeError(
+                f"Cached data for {ticker!r} at {path} does not cover the requested "
+                f"window {start} to {end}, and the re-download failed ({exc}). "
+                "Refresh or delete the stale cache and retry with network access."
+            ) from exc
+        raise
     series.to_frame().to_csv(path, index=True, index_label="Date")
     logger.info("Downloaded and cached %s: %d rows", ticker, len(series))
     return series

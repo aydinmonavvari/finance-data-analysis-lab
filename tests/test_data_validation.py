@@ -129,3 +129,75 @@ class TestCachePolicy:
         assert calls == ["FAKE"]
         assert len(result) == 2
         assert (tmp_path / "FAKE.csv").exists()  # downloaded frame was cached
+
+
+def _write_cache(tmp_path, ticker, index, values):
+    index = index.copy()
+    index.freq = None  # a CSV round-trip does not preserve frequency metadata
+    series = pd.Series(values, index=index, name=ticker)
+    series.index.name = "Date"
+    series.to_frame().to_csv(tmp_path / f"{ticker}.csv", index_label="Date")
+    return series
+
+
+class TestCacheCoveragePolicy:
+    """A truncated cache must never silently shorten the study (audit fix)."""
+
+    def _fake_download(self, monkeypatch, calls, index, values):
+        def fake_fetch(ticker, start, end, **kwargs):
+            calls.append((ticker, start, end))
+            return pd.Series(values, index=index, name=ticker)
+
+        monkeypatch.setattr("finance_data_analysis_lab.data.fetch_adjusted_close", fake_fetch)
+
+    def test_truncated_cache_triggers_warning_and_redownload(self, tmp_path, monkeypatch, caplog):
+        # Cache covers only Jan 2024 of the requested Jan-Jun window.
+        short_index = pd.bdate_range("2024-01-01", periods=20)
+        _write_cache(tmp_path, "AAPL", short_index, np.linspace(100, 110, 20))
+        full_index = pd.bdate_range("2024-01-01", periods=110)
+        calls = []
+        self._fake_download(monkeypatch, calls, full_index, np.linspace(100, 130, 110))
+
+        with caplog.at_level("WARNING", logger="finance_data_analysis_lab.data"):
+            result = load_or_fetch("AAPL", "2024-01-01", "2024-06-01", tmp_path)
+
+        assert calls == [("AAPL", "2024-01-01", "2024-06-01")]  # re-download attempted
+        assert any("does NOT cover" in record.message for record in caplog.records)
+        assert len(result) == 110  # the full requested window, not the short cache
+        assert result.index.max() == full_index[-1]
+        # the truncated cache file was upgraded in place
+        repaired = pd.read_csv(tmp_path / "AAPL.csv", index_col=0, parse_dates=True)
+        assert len(repaired) == 110
+
+    def test_insufficient_cache_and_failed_download_raise_clear_error(
+        self, tmp_path, monkeypatch
+    ):
+        short_index = pd.bdate_range("2024-01-01", periods=5)
+        _write_cache(tmp_path, "MSFT", short_index, [100.0, 101.0, 102.0, 103.0, 104.0])
+
+        def failing_fetch(ticker, start, end, **kwargs):
+            raise RuntimeError("network unavailable")
+
+        monkeypatch.setattr(
+            "finance_data_analysis_lab.data.fetch_adjusted_close", failing_fetch
+        )
+        with pytest.raises(RuntimeError, match="does not cover the requested window"):
+            load_or_fetch("MSFT", "2024-01-01", "2024-06-01", tmp_path)
+
+    def test_full_coverage_cache_still_hits_without_network(
+        self, tmp_path, monkeypatch, caplog
+    ):
+        # A cache that covers the window (within the holiday tolerance) must NOT
+        # trigger a download — e.g. window starting on the Jan 1 market holiday
+        # while the cache begins on the first trading day after it.
+        index = pd.bdate_range("2024-01-02", periods=3)
+        cached = _write_cache(tmp_path, "SPY", index, [100.0, 101.0, 102.0])
+        calls = []
+        self._fake_download(monkeypatch, calls, index, [100.0, 101.0, 102.0])
+
+        with caplog.at_level("WARNING", logger="finance_data_analysis_lab.data"):
+            result = load_or_fetch("SPY", "2024-01-01", "2024-01-08", tmp_path)
+
+        assert calls == []  # no download attempted
+        assert not any("does NOT cover" in record.message for record in caplog.records)
+        pd.testing.assert_series_equal(result, cached)
