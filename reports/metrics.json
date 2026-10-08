@@ -1,0 +1,362 @@
+{
+  "generated_at": "2026-10-08 08:13 UTC",
+  "project": "finance-data-analysis-lab",
+  "description": "Descriptive financial analytics on real daily market data (educational research project; not investment advice).",
+  "config": {
+    "tickers": [
+      "AAPL",
+      "MSFT",
+      "JNJ",
+      "JPM",
+      "XOM",
+      "PG",
+      "AMZN"
+    ],
+    "benchmark": "SPY",
+    "start": "2018-01-01",
+    "end": "2026-10-08",
+    "rf_annual": 0.0,
+    "periods_per_year": 252,
+    "raw_dir": "data/raw",
+    "processed_dir": "data/processed",
+    "figures_dir": "figures",
+    "reports_dir": "reports"
+  },
+  "validation": {
+    "rows_input": 2203,
+    "rows_after_cleaning": 2203,
+    "rows_dropped": 0,
+    "start": "2018-01-02",
+    "end": "2026-10-07",
+    "symbols": [
+      "AAPL",
+      "MSFT",
+      "JNJ",
+      "JPM",
+      "XOM",
+      "PG",
+      "AMZN",
+      "SPY"
+    ],
+    "missing_before": {
+      "AAPL": 0,
+      "MSFT": 0,
+      "JNJ": 0,
+      "JPM": 0,
+      "XOM": 0,
+      "PG": 0,
+      "AMZN": 0,
+      "SPY": 0
+    },
+    "missing_after": {
+      "AAPL": 0,
+      "MSFT": 0,
+      "JNJ": 0,
+      "JPM": 0,
+      "XOM": 0,
+      "PG": 0,
+      "AMZN": 0,
+      "SPY": 0
+    },
+    "max_ffill_limit": 5,
+    "warnings": []
+  },
+  "metrics": [
+    {
+      "ticker": "AAPL",
+      "first_date": "2018-01-02",
+      "last_date": "2026-10-07",
+      "n_observations": 2203,
+      "total_return": 7.368136,
+      "annualized_return": 0.275225,
+      "annualized_volatility": 0.304317,
+      "sharpe_ratio": 0.951233,
+      "sortino_ratio": 1.400586,
+      "calmar_ratio": 0.714576,
+      "max_drawdown": -0.385159,
+      "beta_vs_benchmark": 1.20209,
+      "alpha_annual_vs_benchmark": 0.103382,
+      "jarque_bera": {
+        "statistic": 3415.813162,
+        "p_value": 0.0,
+        "skew": -0.119637,
+        "kurtosis": 6.096911,
+        "reject_normality_at_5pct": true
+      },
+      "adf_log_price": {
+        "statistic": -0.928408,
+        "p_value": 0.778473,
+        "reject_unit_root_at_5pct": false
+      },
+      "adf_log_return": {
+        "statistic": -15.404218,
+        "p_value": 0.0,
+        "reject_unit_root_at_5pct": true
+      },
+      "ljung_box_lag20": {
+        "statistic": 76.239688,
+        "p_value": 0.0,
+        "reject_no_autocorrelation_at_5pct": true
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "first_date": "2018-01-02",
+      "last_date": "2026-10-07",
+      "n_observations": 2203,
+      "total_return": 5.744066,
+      "annualized_return": 0.244122,
+      "annualized_volatility": 0.290782,
+      "sharpe_ratio": 0.896447,
+      "sortino_ratio": 1.333254,
+      "calmar_ratio": 0.657152,
+      "max_drawdown": -0.371485,
+      "beta_vs_benchmark": 1.173232,
+      "alpha_annual_vs_benchmark": 0.079044,
+      "jarque_bera": {
+        "statistic": 6049.243032,
+        "p_value": 0.0,
+        "skew": 0.000584,
+        "kurtosis": 8.11984,
+        "reject_normality_at_5pct": true
+      },
+      "adf_log_price": {
+        "statistic": -1.455786,
+        "p_value": 0.555259,
+        "reject_unit_root_at_5pct": false
+      },
+      "adf_log_return": {
+        "statistic": -15.684368,
+        "p_value": 0.0,
+        "reject_unit_root_at_5pct": true
+      },
+      "ljung_box_lag20": {
+        "statistic": 122.648021,
+        "p_value": 0.0,
+        "reject_no_autocorrelation_at_5pct": true
+      }
+    },
+    {
+      "ticker": "JNJ",
+      "first_date": "2018-01-02",
+      "last_date": "2026-10-07",
+      "n_observations": 2203,
+      "total_return": 1.358329,
+      "annualized_return": 0.103167,
+      "annualized_volatility": 0.196296,
+      "sharpe_ratio": 0.598603,
+      "sortino_ratio": 0.853198,
+      "calmar_ratio": 0.376987,
+      "max_drawdown": -0.273663,
+      "beta_vs_benchmark": 0.432522,
+      "alpha_annual_vs_benchmark": 0.050545,
+      "jarque_bera": {
+        "statistic": 6695.400972,
+        "p_value": 0.0,
+        "skew": -0.408319,
+        "kurtosis": 8.503382,
+        "reject_normality_at_5pct": true
+      },
+      "adf_log_price": {
+        "statistic": 0.065446,
+        "p_value": 0.963621,
+        "reject_unit_root_at_5pct": false
+      },
+      "adf_log_return": {
+        "statistic": -15.029305,
+        "p_value": 0.0,
+        "reject_unit_root_at_5pct": true
+      },
+      "ljung_box_lag20": {
+        "statistic": 79.997961,
+        "p_value": 0.0,
+        "reject_no_autocorrelation_at_5pct": true
+      }
+    },
+    {
+      "ticker": "JPM",
+      "first_date": "2018-01-02",
+      "last_date": "2026-10-07",
+      "n_observations": 2203,
+      "total_return": 2.873242,
+      "annualized_return": 0.167616,
+      "annualized_volatility": 0.285173,
+      "sharpe_ratio": 0.68581,
+      "sortino_ratio": 1.005708,
+      "calmar_ratio": 0.384207,
+      "max_drawdown": -0.436265,
+      "beta_vs_benchmark": 1.052442,
+      "alpha_annual_vs_benchmark": 0.032646,
+      "jarque_bera": {
+        "statistic": 15294.58203,
+        "p_value": 0.0,
+        "skew": -0.09209,
+        "kurtosis": 12.909861,
+        "reject_normality_at_5pct": true
+      },
+      "adf_log_price": {
+        "statistic": -0.056203,
+        "p_value": 0.95363,
+        "reject_unit_root_at_5pct": false
+      },
+      "adf_log_return": {
+        "statistic": -13.577167,
+        "p_value": 0.0,
+        "reject_unit_root_at_5pct": true
+      },
+      "ljung_box_lag20": {
+        "statistic": 157.066397,
+        "p_value": 0.0,
+        "reject_no_autocorrelation_at_5pct": true
+      }
+    },
+    {
+      "ticker": "XOM",
+      "first_date": "2018-01-02",
+      "last_date": "2026-10-07",
+      "n_observations": 2203,
+      "total_return": 1.837687,
+      "annualized_return": 0.126777,
+      "annualized_volatility": 0.299678,
+      "sharpe_ratio": 0.548317,
+      "sortino_ratio": 0.792171,
+      "calmar_ratio": 0.207808,
+      "max_drawdown": -0.610066,
+      "beta_vs_benchmark": 0.746322,
+      "alpha_annual_vs_benchmark": 0.048781,
+      "jarque_bera": {
+        "statistic": 2541.42635,
+        "p_value": 0.0,
+        "skew": -0.227595,
+        "kurtosis": 5.243307,
+        "reject_normality_at_5pct": true
+      },
+      "adf_log_price": {
+        "statistic": -0.34255,
+        "p_value": 0.919258,
+        "reject_unit_root_at_5pct": false
+      },
+      "adf_log_return": {
+        "statistic": -10.339948,
+        "p_value": 0.0,
+        "reject_unit_root_at_5pct": true
+      },
+      "ljung_box_lag20": {
+        "statistic": 50.224028,
+        "p_value": 0.000206,
+        "reject_no_autocorrelation_at_5pct": true
+      }
+    },
+    {
+      "ticker": "PG",
+      "first_date": "2018-01-02",
+      "last_date": "2026-10-07",
+      "n_observations": 2203,
+      "total_return": 1.060349,
+      "annualized_return": 0.086245,
+      "annualized_volatility": 0.200282,
+      "sharpe_ratio": 0.513134,
+      "sortino_ratio": 0.735317,
+      "calmar_ratio": 0.362794,
+      "max_drawdown": -0.237725,
+      "beta_vs_benchmark": 0.473223,
+      "alpha_annual_vs_benchmark": 0.029512,
+      "jarque_bera": {
+        "statistic": 8094.705251,
+        "p_value": 0.0,
+        "skew": -0.05585,
+        "kurtosis": 9.392188,
+        "reject_normality_at_5pct": true
+      },
+      "adf_log_price": {
+        "statistic": -1.72696,
+        "p_value": 0.417278,
+        "reject_unit_root_at_5pct": false
+      },
+      "adf_log_return": {
+        "statistic": -15.291091,
+        "p_value": 0.0,
+        "reject_unit_root_at_5pct": true
+      },
+      "ljung_box_lag20": {
+        "statistic": 103.628105,
+        "p_value": 0.0,
+        "reject_no_autocorrelation_at_5pct": true
+      }
+    },
+    {
+      "ticker": "AMZN",
+      "first_date": "2018-01-02",
+      "last_date": "2026-10-07",
+      "n_observations": 2203,
+      "total_return": 3.372041,
+      "annualized_return": 0.183916,
+      "annualized_volatility": 0.344275,
+      "sharpe_ratio": 0.662144,
+      "sortino_ratio": 0.97764,
+      "calmar_ratio": 0.327571,
+      "max_drawdown": -0.561453,
+      "beta_vs_benchmark": 1.198613,
+      "alpha_annual_vs_benchmark": 0.042403,
+      "jarque_bera": {
+        "statistic": 1970.340435,
+        "p_value": 0.0,
+        "skew": 0.024744,
+        "kurtosis": 4.633859,
+        "reject_normality_at_5pct": true
+      },
+      "adf_log_price": {
+        "statistic": -1.816132,
+        "p_value": 0.372482,
+        "reject_unit_root_at_5pct": false
+      },
+      "adf_log_return": {
+        "statistic": -47.721165,
+        "p_value": 0.0,
+        "reject_unit_root_at_5pct": true
+      },
+      "ljung_box_lag20": {
+        "statistic": 27.215949,
+        "p_value": 0.129297,
+        "reject_no_autocorrelation_at_5pct": false
+      }
+    },
+    {
+      "ticker": "SPY",
+      "first_date": "2018-01-02",
+      "last_date": "2026-10-07",
+      "n_observations": 2203,
+      "total_return": 2.302122,
+      "annualized_return": 0.146493,
+      "annualized_volatility": 0.189849,
+      "sharpe_ratio": 0.815434,
+      "sortino_ratio": 1.148964,
+      "calmar_ratio": 0.434475,
+      "max_drawdown": -0.337173,
+      "beta_vs_benchmark": 1.0,
+      "alpha_annual_vs_benchmark": -0.0,
+      "jarque_bera": {
+        "statistic": 17265.800499,
+        "p_value": 0.0,
+        "skew": -0.566573,
+        "kurtosis": 13.671104,
+        "reject_normality_at_5pct": true
+      },
+      "adf_log_price": {
+        "statistic": -0.145382,
+        "p_value": 0.944726,
+        "reject_unit_root_at_5pct": false
+      },
+      "adf_log_return": {
+        "statistic": -14.961267,
+        "p_value": 0.0,
+        "reject_unit_root_at_5pct": true
+      },
+      "ljung_box_lag20": {
+        "statistic": 236.480283,
+        "p_value": 0.0,
+        "reject_no_autocorrelation_at_5pct": true
+      }
+    }
+  ]
+}
